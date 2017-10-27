@@ -1,20 +1,22 @@
-from scrapy.spiders import CrawlSpider, Rule
-from scrapy.linkextractors import LinkExtractor
+import scrapy
+import csv
 
 
-class BreakingBotSpider(CrawlSpider):
-    name = "breakingbot"
-    allowed_domains = ["www.olx.com.pk"]
-    start_urls = [
-        'https://www.olx.com.pk/computers-accessories/',
-        'https://www.olx.com.pk/tv-video-audio/',
-        'https://www.olx.com.pk/games-entertainment/'
-    ]
+class QuotesSpider(scrapy.Spider):
+    name = "quotes"
+    with open("top-1000.csv", "rb") as f:
+        urls = []
+        reader = csv.reader(f)
+        for i, line in enumerate(reader):
+            urls.append("http://www." + line[1])
+        start_urls = urls
 
-    rules = (
-        Rule(LinkExtractor(allow=(), restrict_css=('.pageNextPrev',)),
-             callback="parse_item",
-             follow=True),)
-
-    def parse_item(self, response):
-        print('Processing..' + response.url)
+    def parse(self, response):
+        yield {
+            "url": response.url,
+            "status": response.status
+        }
+        next_page = response.css('a::attr(href)').extract_first()
+        if next_page is not None:
+            next_page = response.urljoin(next_page)
+            yield scrapy.Request(next_page, callback=self.parse)
