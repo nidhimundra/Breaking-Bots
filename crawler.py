@@ -2,8 +2,8 @@ import scrapy
 import csv
 
 
-class QuotesSpider(scrapy.Spider):
-    name = "quotes"
+class BreakingBotsSpider(scrapy.Spider):
+    name = "breaking-bots"
     with open("top-1000.csv", "rb") as f:
         urls = []
         reader = csv.reader(f)
