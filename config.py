@@ -1,0 +1,7 @@
+METHOD = 'GET'
+HEADERS = {}
+BODY = ""
+COOKIES = {}
+META = {}
+ENCODING = 'utf-8'
+DONT_FILTER = False
