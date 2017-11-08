@@ -10,9 +10,6 @@ class SeleniumCrawler(object):
  
     def __init__(self, base_url, exclusion_list, output_file='example.csv', start_url=None):
  
-        display = Display(visible=0, size=(800, 600))
-        display.start()
-
         assert isinstance(exclusion_list, list), 'Exclusion list - needs to be a list'
  
         self.browser = webdriver.Firefox()  #Add path to your Chromedriver
@@ -57,6 +54,8 @@ class SeleniumCrawler(object):
                 # if url.startswith(self.base): #If the URL belongs to the same domain
                 print url
                 self.url_queue.append(url) #Add the URL to our queue
+            else:
+                print "**** URL visited before ****"
 
     def get_data(self, soup):
         try:
@@ -68,21 +67,25 @@ class SeleniumCrawler(object):
 
     def csv_output(self, url, title):
  
-        with io.open(self.output_file, 'a', encoding='utf-8') as outputfile:
+        with open(self.output_file, 'ab') as outputfile:
             writer = csv.writer(outputfile)
-            data = [url, title]
-            data = map(unicode, data)
-            print data
+            if title:
+                data = [url, title.encode('utf-8')]
+            else:
+                print "there is no title for the article"
+                data = [url]
             writer.writerow(data)
 
     def run_crawler(self):
+        display = Display(visible=0, size=(800, 600))
+        display.start()
         while len(self.url_queue): #If we have URLs to crawl - we crawl
             current_url = self.url_queue.popleft() #We grab a URL from the left of the list
             
             self.crawled_urls.append(current_url) #We then add this URL to our crawled list
-            
+            print "starting to retrieve html for {}".format(current_url)
             html = self.get_page(current_url) 
-            
+            print "html retrieved for {}".format(current_url)
             if self.browser.current_url != current_url: #If the end URL is different from requested URL - add URL to crawled list
                 self.crawled_urls.append(current_url)
             
@@ -93,7 +96,10 @@ class SeleniumCrawler(object):
                 title = self.get_data(soup)
                 self.csv_output(current_url, title)
 
+        self.browser.quit()
+        display.stop()
+
 base_url = 'https://people.cs.umass.edu/~phillipa/'
-exclusion_list = ['signin','login', '.pdf']
+exclusion_list = ['signin','login', '.pdf','.pptx','docx','mailto:']
 selenium_crawl = SeleniumCrawler(base_url, exclusion_list)
 selenium_crawl.run_crawler()

@@ -1,0 +1,3 @@
+1. if it hits document types like .pptx or .docx, it will get stuck. Add ALL to exceptions.
+2. Add some sort of timeout/exception if it takes too long to access a link; add the link to a 'non-reachale' database.
+3. Add extensions/keywords from the list in (2) to exception_list in the code.
