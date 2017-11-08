@@ -1,2 +1,3 @@
 geckodriver
-python modules - pyvirtualdisplay, Bs4
+python modules - pyvirtualdisplay, Bs4, browsermob-proxy
+git clone https://github.com/lightbody/browsermob-proxy.git

@@ -2,4 +2,6 @@
 *.json
 *.log
 *.csv
+*.har
+browsermob-proxy-2.1.4/
 geckodriver

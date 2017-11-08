@@ -1,18 +1,27 @@
-import logging, io
+import logging, io, json
 import csv
 from selenium import webdriver
 from urlparse import urldefrag, urljoin
 from collections import deque
 from bs4 import BeautifulSoup
 from pyvirtualdisplay import Display
+from browsermobproxy import Server
 
 class SeleniumCrawler(object):
  
     def __init__(self, base_url, exclusion_list, output_file='example.csv', start_url=None):
  
         assert isinstance(exclusion_list, list), 'Exclusion list - needs to be a list'
- 
-        self.browser = webdriver.Firefox()  #Add path to your Chromedriver
+        
+        self.server = Server("/home/vshejwalkar/Documents/Breaking-Bots/browsermob-proxy-2.1.4/bin/browsermob-proxy")
+        self.server.start()
+        
+        self.proxy = self.server.create_proxy()
+        
+        self.profile = webdriver.FirefoxProfile()
+        self.profile.set_proxy(self.proxy.selenium_proxy())
+        
+        self.browser = webdriver.Firefox(firefox_profile=self.profile)  #Add path to your Chromedriver
  
         self.base = base_url # To ensure that any links discovered during our crawl lie within the same domain/sub-domain
  
@@ -28,7 +37,12 @@ class SeleniumCrawler(object):
 
     def get_page(self, url):
         try:
+            self.proxy.new_har(url)
             self.browser.get(url)
+            har_info = json.dumps(self.proxy.har)
+            save_har = open('new_har.har','a')
+            save_har.write(har_info)
+            save_har.close()
             return self.browser.page_source
         except Exception as e:
             logging.exception(e)
@@ -79,6 +93,9 @@ class SeleniumCrawler(object):
     def run_crawler(self):
         display = Display(visible=0, size=(800, 600))
         display.start()
+        
+        
+        
         while len(self.url_queue): #If we have URLs to crawl - we crawl
             current_url = self.url_queue.popleft() #We grab a URL from the left of the list
             
@@ -99,7 +116,7 @@ class SeleniumCrawler(object):
         self.browser.quit()
         display.stop()
 
-base_url = 'https://people.cs.umass.edu/~phillipa/'
+base_url = 'http://www.dailymail.co.uk/'
 exclusion_list = ['signin','login', '.pdf','.pptx','docx','mailto:']
 selenium_crawl = SeleniumCrawler(base_url, exclusion_list)
 selenium_crawl.run_crawler()
