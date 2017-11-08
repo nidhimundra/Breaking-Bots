@@ -45,12 +45,16 @@ class BreakingBotsSpider(scrapy.Spider):
             "url": response.url,
             "status": response.status
         }
-        # next_page = response.css('a::attr(href)').extract_first()
-        # if next_page is not None and (response.url in next_page or "http" not in next_page):
-        #     next_page = response.urljoin(next_page)
-        #     if next_page not in self.visited_urls:
-        #         self.visited_urls.append(next_page)
-        #         yield scrapy.Request(next_page, callback=self.parse)
+
+        # Uncomment to scrape recursively
+        """
+        next_page = response.css('a::attr(href)').extract_first()
+        if next_page is not None and (response.url in next_page or "http" not in next_page):
+            next_page = response.urljoin(next_page)
+            if next_page not in self.visited_urls:
+                self.visited_urls.append(next_page)
+                yield scrapy.Request(next_page, callback=self.parse)
+        """
     
     def errback(self, failure):
         if failure.check(HttpError):
