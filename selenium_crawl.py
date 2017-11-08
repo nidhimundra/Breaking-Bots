@@ -7,24 +7,24 @@ from bs4 import BeautifulSoup
 from pyvirtualdisplay import Display
 from browsermobproxy import Server
 
+mac_path = "/Users/Virat/Documents/UMass Code/653/Breaking-Bots/browsermob-proxy-2.1.4/bin/browsermob-proxy"
+ubuntu_path = '/home/vshejwalkar/Documents/Breaking-Bots/browsermob-proxy-2.1.4/bin/browsermob-proxy'
+
 class SeleniumCrawler(object):
  
     def __init__(self, base_url, exclusion_list, output_file='example.csv', start_url=None):
  
         assert isinstance(exclusion_list, list), 'Exclusion list - needs to be a list'
         
-        # self.server = Server("/home/vshejwalkar/Documents/Breaking-Bots/browsermob-proxy-2.1.4/bin/browsermob-proxy")
-        # self.server.start()
-        # self.proxy = self.server.create_proxy()
-        
-        # self.profile = webdriver.FirefoxProfile()
-        # self.profile.set_proxy(self.proxy.selenium_proxy())
+        self.server = Server(mac_path)
+        self.server.start()
+        self.proxy = self.server.create_proxy()
         
         self.profile = webdriver.FirefoxProfile()
-        self.profile.set_proxy(('127.0.0.1',  9000))
+        self.profile.set_proxy(self.proxy.selenium_proxy())
 
         self.browser = webdriver.Firefox(firefox_profile=self.profile)  #Add path to your Chromedriver
-        self.browser.set_page_load_timeout(30)
+        self.browser.set_page_load_timeout(8)
         self.base = base_url # To ensure that any links discovered during our crawl lie within the same domain/sub-domain
  
         self.start = start_url if start_url else base_url  # If no start URL is passed use the base_url
@@ -42,8 +42,6 @@ class SeleniumCrawler(object):
             self.proxy.new_har(url)
             self.browser.get(url)
             har_info = json.dumps(self.proxy.har, indent=4)
-            # for i in range()
-            # print len(har_info.get('log').get('entries')[0].get('requests'))
             save_har = open('new_har.har','a')
             save_har.write(har_info)
             save_har.close()
