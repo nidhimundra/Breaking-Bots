@@ -13,16 +13,18 @@ class SeleniumCrawler(object):
  
         assert isinstance(exclusion_list, list), 'Exclusion list - needs to be a list'
         
-        self.server = Server("/home/vshejwalkar/Documents/Breaking-Bots/browsermob-proxy-2.1.4/bin/browsermob-proxy")
-        self.server.start()
+        # self.server = Server("/home/vshejwalkar/Documents/Breaking-Bots/browsermob-proxy-2.1.4/bin/browsermob-proxy")
+        # self.server.start()
+        # self.proxy = self.server.create_proxy()
         
-        self.proxy = self.server.create_proxy()
+        # self.profile = webdriver.FirefoxProfile()
+        # self.profile.set_proxy(self.proxy.selenium_proxy())
         
         self.profile = webdriver.FirefoxProfile()
-        self.profile.set_proxy(self.proxy.selenium_proxy())
-        
+        self.profile.set_proxy(('127.0.0.1',  9000))
+
         self.browser = webdriver.Firefox(firefox_profile=self.profile)  #Add path to your Chromedriver
- 
+        self.browser.set_page_load_timeout(30)
         self.base = base_url # To ensure that any links discovered during our crawl lie within the same domain/sub-domain
  
         self.start = start_url if start_url else base_url  # If no start URL is passed use the base_url
@@ -39,7 +41,9 @@ class SeleniumCrawler(object):
         try:
             self.proxy.new_har(url)
             self.browser.get(url)
-            har_info = json.dumps(self.proxy.har)
+            har_info = json.dumps(self.proxy.har, indent=4)
+            # for i in range()
+            # print len(har_info.get('log').get('entries')[0].get('requests'))
             save_har = open('new_har.har','a')
             save_har.write(har_info)
             save_har.close()
@@ -66,15 +70,14 @@ class SeleniumCrawler(object):
             
             if url not in self.url_queue and url not in self.crawled_urls: #Check if link is in queue or already crawled
                 # if url.startswith(self.base): #If the URL belongs to the same domain
-                print url
                 self.url_queue.append(url) #Add the URL to our queue
             else:
-                print "**** URL visited before ****"
+                pass
+                # print "**** URL visited before ****"
 
     def get_data(self, soup):
         try:
             title = soup.find('title').get_text().strip().replace('\n','')
-            print title
         except:
             title = None
         return title
@@ -94,15 +97,13 @@ class SeleniumCrawler(object):
         display = Display(visible=0, size=(800, 600))
         display.start()
         
-        
-        
         while len(self.url_queue): #If we have URLs to crawl - we crawl
             current_url = self.url_queue.popleft() #We grab a URL from the left of the list
-            
+
             self.crawled_urls.append(current_url) #We then add this URL to our crawled list
-            print "starting to retrieve html for {}".format(current_url)
-            html = self.get_page(current_url) 
-            print "html retrieved for {}".format(current_url)
+            
+            html = self.get_page(current_url)
+            
             if self.browser.current_url != current_url: #If the end URL is different from requested URL - add URL to crawled list
                 self.crawled_urls.append(current_url)
             
@@ -116,7 +117,7 @@ class SeleniumCrawler(object):
         self.browser.quit()
         display.stop()
 
-base_url = 'http://www.dailymail.co.uk/'
+base_url = 'https://www.amazon.com/'
 exclusion_list = ['signin','login', '.pdf','.pptx','docx','mailto:']
 selenium_crawl = SeleniumCrawler(base_url, exclusion_list)
 selenium_crawl.run_crawler()
