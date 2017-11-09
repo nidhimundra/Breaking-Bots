@@ -1,5 +1,4 @@
-import logging, io, json
-import csv
+import logging, io, json, os, csv
 from selenium import webdriver
 from urlparse import urldefrag, urljoin
 from collections import deque
@@ -10,13 +9,21 @@ from browsermobproxy import Server
 mac_path = "/Users/Virat/Documents/UMass Code/653/Breaking-Bots/browsermob-proxy-2.1.4/bin/browsermob-proxy"
 ubuntu_path = '/home/vshejwalkar/Documents/Breaking-Bots/browsermob-proxy-2.1.4/bin/browsermob-proxy'
 
+ubuntu_dir = '/home/vshejwalkar/Documents/Breaking-Bots/'
+
+class url(object):
+    def __init__(self, url_name, url_depth):
+        self.url_name = url
+        self.url_depth = url_depth
+
+
 class SeleniumCrawler(object):
  
-    def __init__(self, base_url, exclusion_list, output_file='example.csv', start_url=None):
+    def __init__(self, base_url, exclusion_list, file_name_base, start_url=None):
  
         assert isinstance(exclusion_list, list), 'Exclusion list - needs to be a list'
         
-        self.server = Server(mac_path)
+        self.server = Server(ubuntu_path)
         self.server.start()
         self.proxy = self.server.create_proxy()
         
@@ -35,14 +42,19 @@ class SeleniumCrawler(object):
  
         self.url_queue = deque([self.start])  #Add the start URL to our list of URLs to crawl
  
-        self.output_file = output_file
+        self.file_name_base = file_name_base
+        self.dir_name = ubuntu_dir + file_name_base + '/'
+        if not os.path.exists(self.dir_name):
+            os.makedirs(self.dir_name)
+        self.output_file = self.dir_name + file_name_base + '.csv'
 
     def get_page(self, url):
         try:
             self.proxy.new_har(url)
             self.browser.get(url)
             har_info = json.dumps(self.proxy.har, indent=4)
-            save_har = open('new_har.har','a')
+            har_file = self.dir_name + self.file_name_base + '_' + str(len(self.crawled_urls)) +'.har'
+            save_har = open(har_file,'a')
             save_har.write(har_info)
             save_har.close()
             return self.browser.page_source
@@ -67,11 +79,9 @@ class SeleniumCrawler(object):
             url = urljoin(self.base, urldefrag(link)[0]) #Resolve relative links using base and urldefrag
             
             if url not in self.url_queue and url not in self.crawled_urls: #Check if link is in queue or already crawled
-                # if url.startswith(self.base): #If the URL belongs to the same domain
                 self.url_queue.append(url) #Add the URL to our queue
             else:
                 pass
-                # print "**** URL visited before ****"
 
     def get_data(self, soup):
         try:
@@ -83,8 +93,8 @@ class SeleniumCrawler(object):
     def csv_output(self, url, title):
  
         with open(self.output_file, 'ab') as outputfile:
-            writer = csv.writer(outputfile)
-            if title:
+            writer = csv.writer(outputfile
+)            if title:
                 data = [url, title.encode('utf-8')]
             else:
                 print "there is no title for the article"
@@ -101,7 +111,7 @@ class SeleniumCrawler(object):
             self.crawled_urls.append(current_url) #We then add this URL to our crawled list
             
             html = self.get_page(current_url)
-            
+
             if self.browser.current_url != current_url: #If the end URL is different from requested URL - add URL to crawled list
                 self.crawled_urls.append(current_url)
             
@@ -115,7 +125,17 @@ class SeleniumCrawler(object):
         self.browser.quit()
         display.stop()
 
-base_url = 'https://www.amazon.com/'
-exclusion_list = ['signin','login', '.pdf','.pptx','docx','mailto:']
-selenium_crawl = SeleniumCrawler(base_url, exclusion_list)
-selenium_crawl.run_crawler()
+def extract_urls(csv_file):
+    urls = []
+    with open(csv_file + '.csv', 'rb') as f:
+        reader = csv.reader(f)
+        for i, line in enumerate(reader):
+            url_name = "http://www." + line[1]
+            # Create url objects with depth 0 and crawled = False
+            urls.append(url(url_name, 0))
+
+extract_urls('top-100')
+# base_url = 'https://www.amazon.com/'
+# exclusion_list = ['signin','login', '.pdf','.pptx','docx','mailto:']
+# selenium_crawl = SeleniumCrawler(base_url, exclusion_list, 'amazon')
+# selenium_crawl.run_crawler()
