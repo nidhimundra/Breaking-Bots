@@ -5,7 +5,7 @@ from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError, TCPTimedOutError
 
 # Change csv_filename to fetch data from some other CSV file
-csv_filename = "top-1000-processed"
+csv_filename = "top-100-processed"
 
 # Change the request config to fetch configuration from some other python file
 from request_config import *

@@ -1,7 +1,7 @@
 import json
 import csv
 
-file_name = "top-1000-https"
+file_name = "top-100-https"
 json_file = open(file_name + ".json","r")
 objects = json.load(json_file)
 
