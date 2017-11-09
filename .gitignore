@@ -4,4 +4,5 @@
 *.csv
 *.har
 browsermob-proxy-2.1.4/
+browsermob-proxy-py/
 geckodriver
