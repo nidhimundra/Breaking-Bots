@@ -1,0 +1,3 @@
+CUSTOM_SETTINGS = {
+"ROBOTSTXT_OBEY": False
+}
