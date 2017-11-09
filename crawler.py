@@ -5,7 +5,7 @@ from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError, TCPTimedOutError
 
 # Change csv_filename to fetch data from some other CSV file
-csv_filename = "test"
+csv_filename = "top-1000-processed"
 
 # Change the request config to fetch configuration from some other python file
 from request_config import *
@@ -23,7 +23,7 @@ class BreakingBotsSpider(scrapy.Spider):
         urls = []
         reader = csv.reader(f)
         for i, line in enumerate(reader):
-            urls.append("http://www." + line[1])
+            urls.append(line[0])
         start_urls = urls
         visited_urls = start_urls
 
