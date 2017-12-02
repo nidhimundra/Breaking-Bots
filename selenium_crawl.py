@@ -1,10 +1,11 @@
-import logging, io, json, os, csv
+import logging, io, json, os, csv, requests
 from selenium import webdriver
 from urlparse import urldefrag, urljoin
 from collections import deque
 from bs4 import BeautifulSoup
 from pyvirtualdisplay import Display
 from browsermobproxy import Server
+from threading import Thread, Lock, Timer
 
 mac_path = "/Users/Virat/Documents/UMass Code/653/Breaking-Bots/browsermob-proxy-2.1.4/bin/browsermob-proxy"
 ubuntu_path = '/home/vshejwalkar/Documents/Breaking-Bots/browsermob-proxy-2.1.4/bin/browsermob-proxy'
@@ -121,15 +122,17 @@ class SeleniumCrawler(object):
                 if any(e in link for e in self.exclusions): #Check if the link matches our exclusion list
                     continue #If it does we do not proceed with the link
                 url_name = urljoin(self.base, urldefrag(link)[0]) #Resolve relative links using base and urldefrag
-                # print url_name
+                print url_name
+                url_found = False
                 if url_name not in self.crawled_urls:
                     for i in range(len(self.url_queue)):
                         if url_name == self.url_queue[i].url_name: #Check if link is in queue or already crawled
+                            url_found = True
                             break
-                    if url_name.startswith(self.base):
+                    if not url_found and url_name.startswith(self.base):
                         self.url_queue.append(url(url_name, (url_depth + 1))) #Add the URL to our queue
                 else:
-                    pass
+                    url_found = True
         else:
             print "url depth {} not adding links to the queue".format(self.max_depth)
                     
@@ -159,6 +162,8 @@ class SeleniumCrawler(object):
         while len(self.url_queue):
             # We grab a URL object from the left of the list
             current_url = self.url_queue.popleft()
+            # r = requests.get(current_url.url_name)
+            # print('url fetched {} \n HTTP status code {}'.format(current_url.url_name, r.status_code))
 
             # We then add this URL object to our crawled list
             self.crawled_urls.append(current_url.url_name)
@@ -166,8 +171,9 @@ class SeleniumCrawler(object):
             html = self.get_page(current_url)
 
             # If the end URL is different from requested URL - add URL to crawled list
+            # print self.browser.current_url, current_url.url_name
             if self.browser.current_url != current_url.url_name:
-                self.crawled_urls.append(current_url)
+                self.crawled_urls.append(self.browser.current_url)
             
             soup = self.get_soup(html)
 
@@ -187,7 +193,7 @@ def extract_urls(csv_file):
         for i, line in enumerate(reader):
             url_name = "https://www." + line[1]
             print url_name, line[1]
-            selenium_crawl = SeleniumCrawler(url_name, exclusion_list, line[1], 1, 8)
+            selenium_crawl = SeleniumCrawler(url_name, exclusion_list, line[1], 2, 20)
             selenium_crawl.run_crawler()
 
 extract_urls('top-100')
