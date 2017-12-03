@@ -1,4 +1,4 @@
-import logging, io, json, os, csv, requests
+import logging, io, json, os, csv, requests, sys
 from selenium import webdriver
 from urlparse import urldefrag, urljoin
 from collections import deque
@@ -29,7 +29,12 @@ class SeleniumCrawler(object):
         self.proxy = self.server.create_proxy()
         
         self.profile = webdriver.FirefoxProfile()
+        self.profile.set_preference('javascript.enabled', False)
+        self.profile.set_preference('permissions.default.stylesheet', 2)
+        self.profile.set_preference('permissions.default.image', 2)
+        self.profile.set_preference('dom.ipc.plugins.enabled.libflashplayer.so','false')
         self.profile.set_proxy(self.proxy.selenium_proxy())
+        
 
         # Add path to your Chromedriver
         self.browser = webdriver.Firefox(firefox_profile=self.profile)
@@ -63,7 +68,7 @@ class SeleniumCrawler(object):
         self.response_file = self.dir_name + file_name_base + '_responses.csv'
         with open(self.response_file, 'ab') as responsefile:
             writer = csv.writer(responsefile)
-            data = ['url depth', 'primary url', 'primary url status code', 'redirected url if any', 'redirected url status code']
+            data = ['url depth', 'primary url', 'primary url status code', 'redirected url if any', 'redirected url status code', 'html size', 'number of tags']
             writer.writerow(data)
 
         self.max_depth = max_depth
@@ -72,6 +77,7 @@ class SeleniumCrawler(object):
         try:
             self.proxy.new_har(url.url_name)
             self.browser.get(url.url_name)
+
             redirectURL = ''
             redirectURL_entry = None
             har_info = json.dumps(self.proxy.har, indent=4)
@@ -84,27 +90,35 @@ class SeleniumCrawler(object):
                     if har.get('log').get('entries')[i].get('request').get('url') == redirectURL:
                         redirectURL_entry = i
 
+            html_size = len(self.browser.page_source)
+
+            if self.browser.page_source:
+                soup = self.get_soup(self.browser.page_source)
+                for elem in soup.findAll(['script', 'style']):
+                    elem.extract()
+                num_tags = len(soup.find_all(True))
+
+            print(html_size, num_tags)
             with open(self.response_file, 'ab') as responsefile:
                 writer = csv.writer(responsefile)
 
                 if redirectURL_entry:
-                    data = [url.url_depth, url.url_name, har.get('log').get('entries')[0].get('request').get('url'), har.get('log').get('entries')[0].get('response').get('status'), har.get('log').get('entries')[redirectURL_entry].get('request').get('url'), har.get('log').get('entries')[redirectURL_entry].get('response').get('status')]
+                    data = [url.url_depth, url.url_name, har.get('log').get('entries')[0].get('response').get('status'), har.get('log').get('entries')[redirectURL_entry].get('request').get('url'), har.get('log').get('entries')[redirectURL_entry].get('response').get('status'), html_size, num_tags]
                 else:
-                    data = [url.url_depth, url.url_name, har.get('log').get('entries')[0].get('request').get('url'), har.get('log').get('entries')[0].get('response').get('status')]
+                    data = [url.url_depth, url.url_name, har.get('log').get('entries')[0].get('response').get('status'), None, None, html_size, num_tags]
 
                 writer.writerow(data)
-
-            # har_file = self.dir_name + self.file_name_base + '_' + str(len(self.crawled_urls)) +'.har'            
-            # save_har = open(har_file,'a')
-            # save_har.write(har_info)
-            # save_har.close()
             return self.browser.page_source
+
         except Exception as e:
             logging.exception(e)
             with open(self.response_file, 'ab') as responsefile:
                 writer = csv.writer(responsefile)
                 data = [url.url_depth, url.url_name, 'Timeout - {}'.format(self.timeout)]
-                writer.writerow(data)
+                try:
+                    writer.writerow(data)
+                except:
+                    print('')
             return
 
     def get_soup(self, html):
@@ -128,7 +142,7 @@ class SeleniumCrawler(object):
                         if url_name == self.url_queue[i].url_name: #Check if link is in queue or already crawled
                             url_found = True
                             break
-                    if not url_found and url_name.startswith(self.base):
+                    if not url_found:
                         self.url_queue.append(url(url_name, (url_depth + 1))) #Add the URL to our queue
                 else:
                     url_found = True
@@ -143,8 +157,7 @@ class SeleniumCrawler(object):
             title = None
         return title
 
-    def csv_output(self, url, title):
- 
+    def csv_output(self, url, title): 
         with open(self.output_file, 'ab') as outputfile:
             writer = csv.writer(outputfile)
             if title:
@@ -166,14 +179,12 @@ class SeleniumCrawler(object):
             self.crawled_urls.append(current_url.url_name)
 
             html = self.get_page(current_url)
-
             # If the end URL is different from requested URL - add URL to crawled list
             # print self.browser.current_url, current_url.url_name
             if self.browser.current_url != current_url.url_name:
                 self.crawled_urls.append(self.browser.current_url)
             
             soup = self.get_soup(html)
-
             # If we have soup - parse and write to our csv file
             if soup is not None:
                 self.get_links(soup, current_url.url_depth)
@@ -191,9 +202,11 @@ def extract_urls(csv_file):
         reader = csv.reader(f)
         for i, line in enumerate(reader):
             url_name = "https://www." + line[1]
-            selenium_wnds.append(SeleniumCrawler(url_name, exclusion_list, line[1], 2, 20))
+            selenium_wnds.append(SeleniumCrawler(url_name, exclusion_list, line[1], 1, 20))
             thread = Thread(name=line[1], target=selenium_wnds[i].run_crawler)
             thread.start()
             url_threads.append(thread)
+    for thread in url_threads:
+        thread.join()
 
-extract_urls('top_100')
+extract_urls('top-100')

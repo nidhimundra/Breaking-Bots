@@ -3,6 +3,8 @@
 *.log
 *.csv
 *.har
+*.html
 browsermob-proxy-2.1.4/
-browsermob-proxy-py/
+browsermob-proxy-py/*
 geckodriver
+data_try_1/*
