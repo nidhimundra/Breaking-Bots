@@ -12,6 +12,7 @@ ubuntu_path = '/home/vshejwalkar/Documents/Breaking-Bots/browsermob-proxy-2.1.4/
 
 ubuntu_dir = '/home/vshejwalkar/Documents/Breaking-Bots/'
 
+Chromedriver = '/home/vshejwalkar/Documents/Breaking-Bots/chromedriver'
 class url(object):
     def __init__(self, url_name, url_depth):
         self.url_name = url_name
