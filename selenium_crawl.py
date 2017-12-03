@@ -122,7 +122,6 @@ class SeleniumCrawler(object):
                 if any(e in link for e in self.exclusions): #Check if the link matches our exclusion list
                     continue #If it does we do not proceed with the link
                 url_name = urljoin(self.base, urldefrag(link)[0]) #Resolve relative links using base and urldefrag
-                print url_name
                 url_found = False
                 if url_name not in self.crawled_urls:
                     for i in range(len(self.url_queue)):
@@ -134,7 +133,8 @@ class SeleniumCrawler(object):
                 else:
                     url_found = True
         else:
-            print "url depth {} not adding links to the queue".format(self.max_depth)
+            pass
+            # print "url depth {} not adding links to the queue".format(self.max_depth)
                     
     def get_data(self, soup):
         try:
@@ -162,9 +162,6 @@ class SeleniumCrawler(object):
         while len(self.url_queue):
             # We grab a URL object from the left of the list
             current_url = self.url_queue.popleft()
-            # r = requests.get(current_url.url_name)
-            # print('url fetched {} \n HTTP status code {}'.format(current_url.url_name, r.status_code))
-
             # We then add this URL object to our crawled list
             self.crawled_urls.append(current_url.url_name)
 
@@ -187,17 +184,16 @@ class SeleniumCrawler(object):
         display.stop()
 
 def extract_urls(csv_file):
+    url_threads = []
+    selenium_wnds = []
     exclusion_list = ['signin','login', '.pdf','.pptx','docx','mailto:']
     with open(csv_file + '.csv', 'rb') as f:
         reader = csv.reader(f)
         for i, line in enumerate(reader):
             url_name = "https://www." + line[1]
-            print url_name, line[1]
-            selenium_crawl = SeleniumCrawler(url_name, exclusion_list, line[1], 2, 20)
-            selenium_crawl.run_crawler()
+            selenium_wnds.append(SeleniumCrawler(url_name, exclusion_list, line[1], 2, 20))
+            thread = Thread(name=line[1], target=selenium_wnds[i].run_crawler)
+            thread.start()
+            url_threads.append(thread)
 
-extract_urls('top-100')
-# url_name = 'https://www.amazon.com/'
-# exclusion_list = ['signin','login', '.pdf','.pptx','docx','mailto:']
-# selenium_crawl = SeleniumCrawler(url_name, exclusion_list, 'amazon')
-# selenium_crawl.run_crawler()
+extract_urls('top_100')
