@@ -29,7 +29,6 @@ class BreakingBotsSpider(scrapy.Spider):
                 urls.append("http://" + line[1])
             else:
                 url.append(line[1])
-            # break
         start_urls = urls
         visited_urls = start_urls
 
