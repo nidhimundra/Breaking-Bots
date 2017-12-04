@@ -5,6 +5,7 @@ from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError, TCPTimedOutError
 from scrapy.linkextractors import LinkExtractor
+from bs4 import BeautifulSoup
 
 # Change csv_filename to fetch data from some other CSV file
 csv_filename = "top-500-urls"
@@ -20,8 +21,6 @@ class BreakingBotsSpider(scrapy.Spider):
     custom_settings = CUSTOM_SETTINGS
     visited_urls = []
 
-
-
     with open(csv_filename + ".csv", "rb") as f:
         urls = []
         reader = csv.reader(f)
@@ -30,6 +29,7 @@ class BreakingBotsSpider(scrapy.Spider):
                 urls.append("http://" + line[1])
             else:
                 url.append(line[1])
+            # break
         start_urls = urls
         visited_urls = start_urls
 
@@ -57,9 +57,15 @@ class BreakingBotsSpider(scrapy.Spider):
                 yield scrapy.Request(link.url, callback=self.parse)
 
     def parse(self, response):
+        soup = BeautifulSoup(response.body, 'lxml')
         yield {
             "url": response.url,
-            "status": response.status
+            "status": response.status,
+            "flags": response.flags,
+            "number_of_tags": len(soup.find_all(True)),
+            "length": len(response.body),
+            "error_message": "",
+            "error_type": ""
         }
                
     def errback(self, failure):
@@ -68,24 +74,42 @@ class BreakingBotsSpider(scrapy.Spider):
             yield {
                 "url": response.url,
                 "status": response.status,
-                "type": "HttpError"
+                "flags": response.flags,
+                "number_of_tags": 0,
+                "length": 0,
+                "error_message": "",
+                "error_type": "HttpError"
             }
         elif failure.check(DNSLookupError):
             request = failure.request
             yield {
                 "url": request.url,
-                "type": "DNSLookupError"
+                "status": "",
+                "flags": [],
+                "number_of_tags": 0,
+                "length": 0,
+                "error_message": "",
+                "error_type": "DNSLookupError"
             }
         elif failure.check(TimeoutError, TCPTimedOutError):
             request = failure.request
             yield {
                 "url": request.url,
-                "type": "TimeoutError"
+                "status": "",
+                "flags": [],
+                "number_of_tags": 0,
+                "length": 0,
+                "error_message": "",
+                "error_type": "TimeoutError"
             }
         else:
             request = failure.request
             yield {
                 "url": request.url,
-                "reason": repr(failure),
-                "type": "Other"
+                "status": "",
+                "flags": [],
+                "number_of_tags": 0,
+                "length": 0,
+                "error_message": "",
+                "error_type": "Other"
             }

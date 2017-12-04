@@ -1,0 +1,6 @@
+NAME = "high_concurrent_req_low_delay"
+CUSTOM_SETTINGS = {
+"CONCURRENT_REQUESTS_PER_DOMAIN": 50,
+"DOWNLOAD_DELAY": 0,
+"RANDOMIZE_DOWNLOAD_DELAY": True,
+}
