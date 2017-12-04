@@ -1,3 +1,3 @@
-NAME = "Default"
+NAME = "Referer"
 CUSTOM_SETTINGS = {
 }
