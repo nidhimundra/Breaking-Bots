@@ -1,7 +1,7 @@
 import json
 import csv
 
-file_name = "urls"
+file_name = "settings2"
 json_file = open(file_name + ".json","r")
 objects = json.load(json_file)
 
