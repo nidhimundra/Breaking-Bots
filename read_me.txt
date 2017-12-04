@@ -1,8 +1,7 @@
 How to run?
-
-scrapy runspider crawler.py -o urls.json
-
-How to create CSV?
-1. Change filename in parse_json.py
-2. Run python parse_json.py
-
+Steps:
+1. scrapy runspider crawler.py -o <Setting-Name>.json
+2. python parse_json <Setting-Name>    // Note: - No extension here!!!!
+3. Open <Setting-Name>.csv
+4. Sort full data by column: URL
+5. Send to Nidhi :P
