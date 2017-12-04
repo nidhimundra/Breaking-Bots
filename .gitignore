@@ -1,2 +1,13 @@
 *.pyc
 .DS_Store
+*.json
+*.log
+*.csv
+*.har
+*.html
+*.zip
+browsermob-proxy-2.1.4/
+browsermob-proxy-py/*
+geckodriver
+chromedriver
+data_try_1/*
