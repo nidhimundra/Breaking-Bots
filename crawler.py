@@ -29,12 +29,10 @@ class BreakingBotsSpider(scrapy.Spider):
                 urls.append("http://" + line[1])
             else:
                 url.append(line[1])
-            # break
         start_urls = urls
         visited_urls = start_urls
 
     def start_requests(self):
-        print "------", HEADERS
         for u in self.start_urls:
             yield scrapy.Request(u, callback=self.parse,
                                     errback=self.errback,
