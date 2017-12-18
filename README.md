@@ -1,7 +1,6 @@
 # Breaking-Bots
 Evaluating Websites’ Defenses against Web Crawlers
 
-# Motivation
 Global Internet traffic is growing at an estimated rate of 22% per year. However, the Web traffic is dominated by numerous bots crawling the web with different intents. A recent report by Imperva Incapsula reported that 52% of the Web traffic is just bots, and 28.9% among them are the "bad" ones, such as impersonators, scrapers, spammers and hacker tools! Thelwall M et al. Furthermore, even if a badly implemented “good” crawler crawls a middle-sized website, the website will slow down or be totally inaccessible. Because of such intentional or inadvertent effects of crawler activities, it is important to have robust crawler detection techniques in websites. 
 
 Web crawling technology is becoming extremely popular with our ever-increasing reliance on the Internet, especially on the search engines. Web crawlers (also known as spiders or bots) are essentially automated scripts trying to fetch data from the web in a systematic manner. To do this, web crawlers collect pages from the web and index them to support search engine queries. Many legit sites (such as Google and Bing) index downloaded pages to improve user experience by allowing users to find the pages faster.
