@@ -29,6 +29,8 @@ class BreakingBotsSpider(scrapy.Spider):
                 urls.append("http://" + line[1])
             else:
                 url.append(line[1])
+            if i == 10:
+                break
         start_urls = urls
         visited_urls = start_urls
 
@@ -66,6 +68,9 @@ class BreakingBotsSpider(scrapy.Spider):
             "error_message": "",
             "error_type": ""
         }
+        domain  = response.url.split("//")[-1].split("/")[0].split('www.')[-1]
+        file = open("output_pages/" + domain + ".html", "wb")
+        file.write(response.body)
                
     def errback(self, failure):
         if failure.check(HttpError):

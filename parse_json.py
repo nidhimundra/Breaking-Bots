@@ -2,7 +2,6 @@ import json
 import csv
 import sys
 
-
 file_name = sys.argv[1]
 
 json_file = open(file_name + ".json","r")

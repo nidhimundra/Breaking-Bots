@@ -10,9 +10,18 @@ Currently, three main methods are used to detect the Web crawlers:
 * Method based on the web navigational patterns. 
 
 # Goals of the project
-The main goal of our project is to study websites’ responses to different requests from web crawlers. In this regard, we would like to explore different types of crawler behaviours such as time difference in two requests, a number of entry points to a website, with/without user-agent fields, multiple crawlers on a single website, etc.
+Web crawling technology is becoming extremely popular with our ever-increasing reliance on the Internet, especially on the search engines. Web crawlers (also known as spiders or bots) are essentially automated scripts trying to fetch data from the web in a systematic manner. To do this, web crawlers collect pages from the web and index them to support search engine queries. Many legit sites (such as Google and Bing) index downloaded pages to improve user experience by allowing users to find the pages faster.
 
-Based on the responses from different websites to different HTTP requests from crawlers, we would like to identify possible similarities and differences in the mechanisms that the websites employ to detect and block web crawlers. Using the similarities and differences, we aim to classify these mechanisms for different websites and also classify the websites, in order to identify which mechanisms are good for a particular type of  website. 
+When it comes to the World Wide Web there are both bad bots and good bots; there are crawlers with more sinister intentions. A recent report by Imperva Incapsula reported that 52\% of the Web traffic is just bots, and 28.9\% among them are the "bad" ones, such as impersonators, scrapers, spammers and hacker tools! Some of the effects of such crawlers are -- overloading the servers, very high bandwidth consumption, and unauthorized access to content. Because of such intentional or inadvertent effects of crawler activities, it is important to have robust crawler detection techniques in websites. Currently, three main methods are used to detect the Web crawlers:
+* Log attributes detection method
+* Method based on trap technology
+* Method based on the web navigational patterns
 
-To see the effect of crawler(s) on a website, if possible, we would like to measure different aspects of websites’ response such as response time to legitimate requests when crawler(s) is/are running. This might allow us to propose an optimum crawler detection strategy for a website.
+In this regard, the aim of this project is to study websites’ responses to different requests sent from our configurable web crawler. Using top 100 websites from Cisco Umbrella 1 Million, a free list of most popular domains, we explored different crawler behaviors based on different User-Agent fields, different IP for different requests, time difference between two requests, number of concurrent requests, etc. We used Selenium - a headless browser to collect pages as a human would see; the aim is to juxtapose the responses that we got from our designed crawler. Based on the results from Scrapy crawler, we apply k-means clustering algorithm on features to categorize top websites into -- very highly defensive, highly defensive, defensive, poorly defensive and very poorly defensive websites.  Also, the project targets to use different proxies, with which crawler sends GET requests, to analyze their effect on the responses received from the websites.
 
+How to run?
+Steps:
+1. Copy desired setting from settings/*.py to `scrapy_settings.py`
+2. scrapy runspider crawler.py -o <Setting-Name>.json
+3. python parse_json <Setting-Name>    // Note: - No extension here!!!!
+4. See <Setting-Name>.csv to check results
